@@ -1,54 +1,21 @@
-import 'dart:io';
+import 'dart:async';
 
+import 'package:bugs_report/bug_report_overlay.dart';
+import 'package:bugs_report/floating_bug_report_provider.dart';
+import 'package:bugs_report/sentry_reporter.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 Future<void> main() async {
-  await SentryFlutter.init(
-    (options) {
-      options.dsn =
-          'https://b8b0ff96d4144873b882a61900094172@o444009.ingest.sentry.io/6371966';
-      options.tracesSampleRate = 1.0;
-      // options.environmentAttributes = {
-      //   'app_version': '1.0.0',
-      //   'device_name': 'My device',
-      //   'device_id': '12345',
-      // };
-    },
-  );
-  runApp(const MyApp());
+  await SentryReporter.setup(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  Future<void> sendException() async {
-    try {
-      throw Exception('This is an exception');
-    } catch (exception, stackTrace) {
-      await Sentry.captureException(exception, stackTrace: stackTrace);
-    }
-  }
+class MyApp extends StatelessWidget with ChangeNotifier {
+  MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Bugs report",
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text("Bugs report"),
-        ),
-        body: const Center(
-          child: Text('Home page'),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: sendException,
-          child: const Icon(Icons.bug_report),
-        ),
-      ),
-    );
+    return BugReportOverlay(key: key);
   }
 }
